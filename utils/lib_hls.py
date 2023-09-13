@@ -18,7 +18,7 @@ def natural_keys(text):
 # download csv from walter for specifc movie
 def get_container_csv(movie_url, dest_path):
     file_name = movie_url.split('/')[-1]
-
+    print("Movie URL " + str(movie_url))
     u = urlopen(movie_url)
     f = open(os.path.join(dest_path,file_name), 'wb')
     resp = requests.get(movie_url)
@@ -49,15 +49,15 @@ def containers_to_download(cont_list_csv, movie_path):
 def download_containers(movie_thumb_url,movie_path, thumb_dest_dir):
     cont_list_csv = 'container_list.csv'
     containers_to_download(cont_list_csv, movie_path)
-
+    print(movie_thumb_url)
     with open(os.path.join(movie_path,cont_list_csv)) as csvfile:
         readCSV = csv.reader(csvfile)
         for row in readCSV:
             try:
                 t_url = movie_thumb_url+str(row).strip('[]').strip("'")
                 file_name = t_url.split('/')[-1]
-
-                u = urlopen(t_url)
+                #print("container from csv: " + str(file_name))
+                '''u = urlopen(t_url)
                 f = open(os.path.join(thumb_dest_dir,file_name), 'wb')
                 resp = requests.get(t_url)
                 
@@ -74,21 +74,23 @@ def download_containers(movie_thumb_url,movie_path, thumb_dest_dir):
                     f.write(buffer)
                     status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
                     status = status + chr(8)*(len(status)+1)
-                f.close()
+                f.close()'''
             except:
                 pass
     print("Download complted: ", thumb_dest_dir)
 
 ####################################################################
 def get_vidSeg_timestamp(segment_csv, detect_thumbs_csv):
+    print("get vidSeg timestamp" + str(detect_thumbs_csv))
     with open(segment_csv, 'w') as f2:
         with open(detect_thumbs_csv) as f:
             reader = csv.reader(f)
             for rows in reader:
-                            
+                print(rows)
                 fileName = " ".join(rows)
                 tempName = fileName.split("_")
-                frameNumber = int(tempName[1])*25+int (tempName[2].split(".")[0])
+                print("tempName " + str(tempName))
+                frameNumber = int(tempName[1].split(".")[0])
 
                 segment_no = int(frameNumber/10)
                 segment_name = "out"+ '{:02}'.format(segment_no)+".ts"

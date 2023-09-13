@@ -1,11 +1,13 @@
-from keras.optimizers import Optimizer
-from keras import backend as K
+import tensorflow
+from tensorflow.keras.optimizers import Optimizer
+from tensorflow.keras import backend as K
+from tensorflow_addons.optimizers import AdamW
 import six
 import copy
 from six.moves import zip
-from keras.utils.generic_utils import serialize_keras_object
-from keras.utils.generic_utils import deserialize_keras_object
-from keras.legacy import interfaces
+from tensorflow.keras.utils.legacy import serialize_keras_object
+from tensorflow.keras.utils.legacy import deserialize_keras_object
+#from keras.legacy import interfaces
 
 class SGDW(Optimizer):
     """Stochastic gradient descent optimizer.
@@ -23,19 +25,17 @@ class SGDW(Optimizer):
     """
 
     def __init__(self, lr=0.01, momentum=0., decay=0., weight_decay=1e-4, # decoupled weight decay (1/6)
-                 nesterov=False, **kwargs):
-        super(SGDW, self).__init__(**kwargs)
-        with K.name_scope(self.__class__.__name__):
-            self.iterations = K.variable(0, dtype='int64', name='iterations')
-            self.lr = K.variable(lr, name='lr')
-            self.init_lr = lr # decoupled weight decay (2/6)
-            self.momentum = K.variable(momentum, name='momentum')
-            self.decay = K.variable(decay, name='decay')
-            self.wd = K.variable(weight_decay, name='weight_decay') # decoupled weight decay (3/6)
+                 nesterov=False, name="SGDW", **kwargs):
+        super().__init__(name, **kwargs)
+        self._learning_rate = lr
+        self.iterations = K.variable(0, dtype='int64', name='iterations')
+        self.init_lr = lr  # decoupled weight decay (2/6)
+        self.momentum = K.variable(momentum, name='momentum')
+        self.decay = K.variable(decay, name='decay')
+        self.wd = K.variable(weight_decay, name='weight_decay')  # decoupled weight decay (3/6)
         self.initial_decay = decay
         self.nesterov = nesterov
 
-    @interfaces.legacy_get_updates_support
     def get_updates(self, loss, params):
         grads = self.get_gradients(loss, params)
         self.updates = [K.update_add(self.iterations, 1)]

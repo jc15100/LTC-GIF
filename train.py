@@ -1,5 +1,5 @@
-from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard, CSVLogger, ReduceLROnPlateau
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard, CSVLogger, ReduceLROnPlateau
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 import os
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     generators = get_generators()
     train_gen, validation_gen = generators
 
-    hist = model.fit_generator(train_gen,
+    hist = model.fit(train_gen,
         steps_per_epoch= 100,
         validation_data= validation_gen,
         validation_steps= 10,

@@ -1,4 +1,4 @@
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 import numpy as np
 
 import os
@@ -21,7 +21,7 @@ config = parse_opts()
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]= config.device
 
-model_path ='./output/033-1.07.hdf5'
+model_path ='./output/final_model.h5'
 model = load_model(model_path, custom_objects={'SGDW': SGDW})
 
 soccer_video_list = ['ABC Video']            
@@ -29,11 +29,11 @@ baseket_video_list = []
 boxing_video_list = []
 baseball_video_list = []
 cricket_video_list = []
-tennis_video_list = []
+tennis_video_list = ['OpenPadel']
 
 ####################################################################
 def event_recognition(thumbnail_dir, detect_thumb_csv):
-    threshold = 0.80
+    threshold = 0.30
     scenes_data = []
     
     for fileName in os.listdir(thumbnail_dir):
@@ -50,13 +50,19 @@ def event_recognition(thumbnail_dir, detect_thumb_csv):
             label_predictions[label] = predictions[0][i]
 
         sorted_lps = sorted(label_predictions.items(), key=operator.itemgetter(1), reverse=True)
-        
+
+        #print("label predictions " + str(sorted_lps))
+        max_seen = 0
         for i, class_prediction in enumerate(sorted_lps):
             i += 1
+            if float(class_prediction[1]) > max_seen:
+                max_seen = float(class_prediction[1])
             if float(class_prediction[1]) >= threshold:
+                print("here!!! " + str(class_prediction))
                 print("{} {}: {:.2f}%".format(img_fileName, class_prediction[0], class_prediction[1] * 100))
                 scenes_data.append([img_fileName, class_prediction[0]])
-    
+        print("max " + str(max_seen))
+
     with open(detect_thumb_csv, 'w') as fout:
         writer = csv.writer(fout)
         writer.writerows(sorted(scenes_data, key=natural_keys))
@@ -67,6 +73,7 @@ def process_csv(csv_file, process_thumb_path, select_category):
     with open(csv_file, 'r') as fin:
         reader = csv.reader(fin)
         for row in reader:
+            print("row " + str(row) + " " + str(select_category))
             if select_category == 'Soccer':
                 if row[1] == 'SoccerJuggling' or row[1] == 'SoccerPenalty':
                     video_data.append([os.path.basename(row[0])])
@@ -87,8 +94,8 @@ def process_csv(csv_file, process_thumb_path, select_category):
                 if row[1] == 'CricketBowling'or row[1] == 'CricketShot':
                     video_data.append([os.path.basename(row[0])])
                     count += 1
-            elif select_category == 'Tennis':
-                if row[1] == 'TennisSwing':
+            elif select_category == 'UnevenBars':
+                if row[1] == 'UnevenBars':
                     video_data.append([os.path.basename(row[0])])
                     count += 1
             else:
@@ -123,7 +130,7 @@ def main(select_category):
 
     if select_category == 'Soccer':
         video_list = soccer_video_list
-    elif select_category == 'Baseketball':
+    elif select_category == 'Basketball':
         video_list = baseket_video_list
     elif select_category == 'Boxing':
         video_list = boxing_video_list
@@ -131,12 +138,12 @@ def main(select_category):
         video_list = baseball_video_list
     elif select_category == 'Cricket':
         video_list = cricket_video_list
-    elif select_category == 'Tennis':
+    elif select_category == 'UnevenBars':
         video_list = tennis_video_list
     else:
         print('Error 404: No category found')
 
-
+    print("Video List " + str(video_list))
     for selected_video in video_list:
         print('-'*80)
         print('{}: {}'.format(count, selected_video))
@@ -149,8 +156,8 @@ def main(select_category):
         containers_url = os.path.join(config.walter_ip,selected_video,'thumbnails/')
         seg_movie_url = os.path.join(config.walter_ip, selected_video, 'segments')
 
-        print(containers_csv_url)
-        print(containers_url)
+        print("Containers CSV " + str(containers_csv_url))
+        print("Containers URL " + str(containers_url))
         
         detect_thumb_csv = os.path.join(main_video_dir, 'detect_thumbs.csv')
         process_thumb_csv = os.path.join(main_video_dir, select_category+'_thumbs.csv')
@@ -164,19 +171,22 @@ def main(select_category):
 
         #--------------------------------------------------
         start1 = time.time()
-        get_container_csv(containers_csv_url, main_video_dir)
+        print("main video dir" + str(main_video_dir))
+        print("vid_container_dir" + str(vid_container_dir))
+        # Data is already downloaded, no need to download
+        #get_container_csv(containers_csv_url, main_video_dir)
         download_containers(containers_url, main_video_dir, vid_container_dir)
         end1 = time.time()
-        text_file.write('Download TCs seconds: ' + str(round(end1 - start1, 2)) + '----- mintues: ' + str(round (end1 - start1, 2)/60) )
+        text_file.write('Download TCs seconds: ' + str(round(end1 - start1, 2)) + '----- minutes: ' + str(round (end1 - start1, 2)/60) )
         text_file.write('\n')
         # ==================================================
         
 
         # ==================================================
         start2 = time.time()
-        extract_thumbnails(vid_container_dir, vid_thumbnail_dir)
+        #extract_thumbnails(vid_container_dir, vid_thumbnail_dir)
         end2 = time.time()
-        text_file.write('Extract thumbnail seconds: ' + str(round(end2 - start2, 2)) + '----- mintues: ' + str(round (end2 - start2, 2)/60) )
+        text_file.write('Extract thumbnail seconds: ' + str(round(end2 - start2, 2)) + '----- minutes: ' + str(round (end2 - start2, 2)/60) )
         text_file.write('\n')
         # ==================================================
 
@@ -185,7 +195,7 @@ def main(select_category):
         start3 = time.time()
         event_recognition(vid_thumbnail_dir, detect_thumb_csv)
         end3 = time.time()
-        text_file.write('Event recognize seconds: ' + str(round(end3 - start3, 2)) + '----- mintues: ' + str(round (end3 - start3, 2)/60) )
+        text_file.write('Event recognize seconds: ' + str(round(end3 - start3, 2)) + '----- minutes: ' + str(round (end3 - start3, 2)/60) )
         text_file.write('\n')
         # ==================================================
 
@@ -199,7 +209,7 @@ def main(select_category):
         process_csv(detect_thumb_csv, process_thumb_csv, select_category)
         get_vidSeg_timestamp(segmnets_csv, process_thumb_csv)
         remove_dublicate_row_csv(segmnets_csv)
-        download_segments(seg_movie_url, segmnets_csv, vid_segment_dir)
+        #download_segments(seg_movie_url, segmnets_csv, vid_segment_dir)
         end4 = time.time()
         # ==================================================
 
@@ -209,7 +219,7 @@ def main(select_category):
         end5 = time.time()
         # ==================================================
 
-        text_file.write('Get timestamp: seconds: ' + str(round(end4 - start4, 2)) + '----- mintues: ' + str(round (end4 - start4, 2)/60))
+        text_file.write('Get timestamp: seconds: ' + str(round(end4 - start4, 2)) + '----- minutes: ' + str(round (end4 - start4, 2)/60))
         text_file.write('\n')
         text_file.write('Generate GIF sec: ' + str(round(end5 - start5, 2)) + ' mint: ' + str(round (end5 - start5, 2)/60))
         text_file.write('\n')

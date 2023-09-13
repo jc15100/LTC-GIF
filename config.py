@@ -30,6 +30,6 @@ def parse_opts():
     #Misc
     parser.add_argument('--device', default='1',type=str, help='GPU device string number 1 |1,2')
     parser.add_argument('--walter_ip', default='http://192.168.0.22/dataset/', type=str, help='Server IP address')
-    parser.add_argument('--category', default='Soccer',type=str, help='Video genre | Soccer | Baseketball | Boxing | Baseball | Cricket | Tennis')
+    parser.add_argument('--category', default='Soccer',type=str, help='Video genre | Soccer | Basketball | Boxing | Baseball | Cricket | Tennis')
 
     return parser.parse_args()

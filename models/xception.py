@@ -1,7 +1,8 @@
-from keras.layers import Conv2D, Dense, Dropout
-from keras.layers import BatchNormalization, Activation, MaxPooling2D, GlobalAveragePooling2D
-from keras.models import Model
-from keras.applications.xception import Xception
+from tensorflow.keras.layers import Conv2D, Dense, Dropout
+from tensorflow.keras.layers import BatchNormalization, Activation, MaxPooling2D, GlobalAveragePooling2D
+from tensorflow.keras.models import Model
+from tensorflow.keras.applications.xception import Xception
+from tensorflow.keras.optimizers import Adam
 
 from modules.SGDW import SGDW
 from modules.vortexPooling import vortex_pooling
@@ -29,7 +30,11 @@ def create_model(show_summary = True, img_size = 224, num_classes = 101):
     outputLayer = Dense (num_classes, activation = 'softmax', name='classifier') (layer2)
     model = Model (inputs = base_model.input, outputs = outputLayer)
 
-    optimizer = SGDW(momentum=0.9)
+    #
+    # Custom SGDW is giving issues on Apple Silicon see https://github.com/keras-team/keras/issues/18224
+    # Fallback to Kera's Adam optimizer
+    #
+    optimizer = Adam(ema_momentum=0.9, learning_rate=0.01, weight_decay=1e-4)
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['acc'])
     if show_summary:
         model.summary()

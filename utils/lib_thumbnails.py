@@ -1,10 +1,11 @@
-from keras.preprocessing.image import img_to_array, load_img
+from tensorflow.keras.preprocessing.image import img_to_array, load_img
 
 import os
 import numpy as np
 from PIL import Image
 
 def extract_thumbnails(container_path, thumb_path):
+    print("Container path " + str(container_path))
     path, dirs, files = next(os.walk(container_path))
     file_count = len(files)
     print("Extracting frames %s from containers: %s" % (file_count*25, file_count))
@@ -44,7 +45,7 @@ def extract_thumbnails(container_path, thumb_path):
                 starty = starty + cropy
 
         frameNumber = frameNumber + 1
-    print("containers_path %s : thumbanils_path %s" % (container_path, thumb_path))
+    print("containers_path %s : thumbnails_path %s" % (container_path, thumb_path))
     print('thumbails extraction process completed')
 
 #Process an image that we can pass to our networks.

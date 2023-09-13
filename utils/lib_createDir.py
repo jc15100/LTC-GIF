@@ -41,20 +41,24 @@ def prepare_output_dirs(config):
 # create directory for hls server files to download
 def prepare_walter_dirs(vid_server_dir, video_title):
     prefix = time.strftime("%Y_%m_%d")
-    subdir = "{}_{}".format(prefix, video_title)
-    main_video_dir = os.path.join(vid_server_dir, subdir)
+    subdir = "{}".format(video_title)
+    main_video_dir =os.path.join(vid_server_dir, subdir)
 
-    if os.path.exists(main_video_dir):
+    #if os.path.exists(main_video_dir):
         # Only occurs when experiment started the same minute
-        shutil.rmtree(main_video_dir)
+        #shutil.rmtree(main_video_dir)
 
     vid_container_dir = os.path.join(main_video_dir, 'containers')
     vid_thumbnail_dir = os.path.join(main_video_dir, 'thumbnails')
     vid_segment_dir = os.path.join(main_video_dir, 'segments')
-    
-    os.mkdir(main_video_dir)
-    os.mkdir(vid_container_dir)
-    os.mkdir(vid_thumbnail_dir)
-    os.mkdir(vid_segment_dir)
+
+    print("main_video_dir " + str(main_video_dir))
+    print("vid_container_dir " + str(vid_container_dir))
+    print("vid_thumbnail_dir " + str(vid_thumbnail_dir))
+    print("vid_segment_dir " + str(vid_segment_dir))
+    #os.mkdir(main_video_dir)
+    #os.mkdir(vid_container_dir)
+    #os.mkdir(vid_thumbnail_dir)
+    #os.mkdir(vid_segment_dir)
 
     return main_video_dir, vid_container_dir, vid_thumbnail_dir, vid_segment_dir
